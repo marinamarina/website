@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %} About me {% endblock %}
+
+{% block inner_container %}
+        <h1>That is an about me page</h1>
+        <p>Welcome, {% if current_user.is_authenticated() %} {{ current_user.username }}{% else %} Stranger{% endif %}!</p>
+        <form method="POST">
+            <div class="block">
+                {{ form.name.label }} {{ form.name(id='name-field') }}
+            </div>
+            <div class="block">
+                {{ form.breed.label }} {{ form.breed(id='breed-field') }}
+            </div>
+            {{ form.submit() }}
+        </form>
+
+        <h1>Visible for everyone</h1>
+        <p>{{ pokus }}</p>
+            <h1>Only visible for admins</h1>
+
+{% endblock %}

@@ -1,0 +1,1 @@
+<h2>I'm your super cool footer rendered from an include! Xxx</h2>

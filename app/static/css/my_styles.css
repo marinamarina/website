@@ -1,0 +1,12 @@
+body {
+    background: url('../img/soft_circle_scales.png') repeat #ffffff;
+}
+#submit {
+    background: violet;
+}
+.auth {
+    display: block;
+    color: white;
+    float: none!important
+
+}
