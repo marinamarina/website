@@ -6,12 +6,10 @@ from .forms import NameForm
 from .. import db
 from ..models import User
 from ..email import send_email
-from ..decorators import permission_required, admin_required
+from ..decorators_me import permission_required, templated
 import os
 from ..football_api.football_api_parser import FootballAPIWrapper
 from ..models import Permission
-
-print Permission.ADMINISTER
 
 @main.app_context_processor
 def inject_permissions():
@@ -20,12 +18,16 @@ def inject_permissions():
 #route decorators
 @main.route('/')
 @main.route('/index')
+@templated()
 def index():
+    #from .. import config
+    #print config['default'].FOOTY_ADMIN
     name = None
-    return render_template('index.html', current_time=datetime.utcnow(), name=session.get('name'))
+    return dict(current_time=datetime.utcnow(), name=session.get('name'))
 
 @main.route('/aboutMe', methods=['GET', 'POST'])
 @login_required
+@templated()
 def aboutMe():
     form = NameForm()
 
@@ -49,12 +51,11 @@ def aboutMe():
 
         # prevent form resubmission
         return redirect(url_for('.index'))
-    return render_template('aboutMe.html',
-                           form=form, name=session.get('name'),
-                           known=session.get('known', False))
+    return dict(form=form, name=session.get('name'), known=session.get('known', False))
 
 @main.route('/leagueTable')
-def league_table():
+@templated()
+def leagueTable():
     table = dict()
     # example usage
     wrap = FootballAPIWrapper()
@@ -66,7 +67,7 @@ def league_table():
     try:
         for key, value in league_table.items():
             print value.position
-            return render_template('leagueTable.html', league_table=wrap.league_table)
+            return dict(league_table=wrap.league_table)
 
     except Exception:
         return redirect(url_for('main.index'))
@@ -74,12 +75,13 @@ def league_table():
 
 @main.route('/admin', methods=['GET', 'POST'])
 @login_required
-@admin_required
+@permission_required(Permission.ADMINISTER)
+@templated()
 def admin():
-    return render_template('admin.html')
+    pass
 
 @main.route('/moderators', methods=['GET', 'POST'])
 @login_required
-@permission_required(Permission.MODERATE_COMMENTS)
+#@permission_required(Permission.MODERATE_COMMENTS)
 def moderators():
     return 'Only for moderators'

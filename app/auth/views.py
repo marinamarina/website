@@ -10,8 +10,10 @@ from sqlalchemy.exc import IntegrityError
 
 @auth.before_app_request
 def before_request():
-    if current_user.is_authenticated() and not current_user.confirmed and request.endpoint[0:5] != 'auth.':
-        return redirect(url_for('auth.unconfirmed'))
+    if current_user.is_authenticated():
+        current_user.measure_time()
+        if not current_user.confirmed and request.endpoint[0:5] != 'auth.':
+            return redirect(url_for('auth.unconfirmed'))
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -19,7 +21,6 @@ def login():
 
     #is form submission valid?
     if form.validate_on_submit():
-
         user = User.query.filter_by(email = form.email.data).first()
 
         if user is not None and user.verify_password(form.password.data):
@@ -30,7 +31,7 @@ def login():
             else:
                 print ("You have NOT been authorized!")
             finally:
-                flash ("You have now been authorized!")
+                flash ("You have now been authorized!" + str(current_user.role.__repr__))
                 return redirect(request.args.get('next') or url_for('main.index'))
 
     return render_template('auth/login.html', form = form, title='Sign In')

@@ -4,6 +4,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app
 from . import login_manager
+from datetime import datetime
 
 """Database models representation"""
 class Permission:
@@ -56,15 +57,22 @@ class User(UserMixin, db.Model):
     # password is stored in this field
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
+    real_name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default = datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default = datetime.utcnow)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
+        print Role.query.filter_by(permissions=0xff).first()
         if self.role is None:
             if self.email == current_app.config['FOOTY_ADMIN']:
                 self.role = Role.query.filter_by(permissions=0xff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+            self.location='Pittodrie'
 
     def generate_confirmation_token(self, expiration=3600):
         s = Serializer(current_app.config['SECRET_KEY'], expiration)
@@ -83,6 +91,10 @@ class User(UserMixin, db.Model):
             db.session.add(self)
             return True
 
+    def measure_time(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
+        print 'TIME IS ******** %s' % str(self.last_seen)
 
     # using property because I want to protect the password
     @property
